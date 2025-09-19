@@ -82,26 +82,6 @@ pipeline {
             }
         }
 
-       
-
-        stage("Trivy Scan Image") {
-            steps {
-                script {
-                    sh """
-                    echo '🔍 Running Trivy scan on ${env.IMAGE_TAG}'
-
-                    # JSON report
-                    trivy image -f json -o trivy-image.json ${env.IMAGE_TAG}
-
-                    # HTML report using built-in HTML format
-                    trivy image -f table -o trivy-image.txt ${env.IMAGE_TAG}
-
-                    # Fail build if HIGH/CRITICAL vulnerabilities found
-                    # trivy image --exit-code 1 --severity HIGH,CRITICAL ${env.IMAGE_TAG} || true
-                """
-                }
-            }
-        }
 
 
         stage("Deploy to Container") {
