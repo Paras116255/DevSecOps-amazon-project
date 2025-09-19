@@ -88,7 +88,7 @@ pipeline {
             steps {
                 script {
                     sh "docker rm -f amazon || true"
-                    sh "docker run -d --name amazon -p 80:80 ${env.IMAGE_TAG}"
+                    sh "docker run -d --name amazon -p 80:80 paras1112/amazon:latest"
                 }
             }
         }
