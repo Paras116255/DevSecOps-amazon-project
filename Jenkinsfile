@@ -73,11 +73,7 @@ pipeline {
         stage("Tag & Push to DockerHub") {
             steps {
                 script {
-                    withCredentials([string(credentialsId: 'docker-cred', variable: 'dockerpwd')]) {
-                        sh "docker login -u paras1112 -p ${dockerpwd}"
-                        sh "docker tag amazon ${env.IMAGE_TAG}"
-                        sh "docker push ${env.IMAGE_TAG}"
-
+                    withDockerRegistry(credentialsId: 'docker-cred') {
                         // Also push latest
                         sh "docker tag amazon paras1112/amazon:latest"
                         sh "docker push paras1112/amazon:latest"
