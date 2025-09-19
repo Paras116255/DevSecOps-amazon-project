@@ -57,6 +57,22 @@ pipeline {
             }
         }
 
+
+
+        DP-CHeck:stage("OWASP FS Scan") {
+            steps {
+                dependencyCheck additionalArguments: '''
+                    --scan ./ 
+                    --disableYarnAudit 
+                    --disableNodeAudit 
+                
+                   ''',
+                odcInstallation: 'dp-check'
+
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
         stage("Build Docker Image") {
             steps {
                 script {
@@ -69,6 +85,40 @@ pipeline {
                 }
             }
         }
+
+
+        
+
+        stage("Deploy to Container") {
+            steps {
+                script {
+                    sh "docker rm -f amazon || true"
+                    sh "docker run -d --name amazon -p 80:80 paras1112/amazon:latest"
+                }
+            }
+        }
+    }
+
+
+stage("Trivy Scan Image") {
+            steps {
+                script {
+                    sh """
+                    echo '🔍 Running Trivy scan on ${env.IMAGE_TAG}'
+
+                    # JSON report
+                    trivy image -f json -o trivy-image.json ${env.IMAGE_TAG}
+
+                    # HTML report using built-in HTML format
+                    trivy image -f table -o trivy-image.txt ${env.IMAGE_TAG}
+
+                    # Fail build if HIGH/CRITICAL vulnerabilities found
+                    # trivy image --exit-code 1 --severity HIGH,CRITICAL ${env.IMAGE_TAG} || true
+                """
+                }
+            }
+        }
+
 
         stage("Tag & Push to DockerHub") {
             steps {
@@ -84,15 +134,7 @@ pipeline {
 
 
 
-        stage("Deploy to Container") {
-            steps {
-                script {
-                    sh "docker rm -f amazon || true"
-                    sh "docker run -d --name amazon -p 80:80 paras1112/amazon:latest"
-                }
-            }
-        }
-    }
+        
 
       post {
     always {
